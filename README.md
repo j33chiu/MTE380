@@ -13,3 +13,4 @@
    * Adafruit MPU6050
    * DFRobot_VL53L0X
 9. should be able to compile and run repo code now
+10. If an "STM32_Programmer_CLI.exe: not found" error occurs, download and install STMCubProgrammer from https://www.st.com/en/development-tools/stm32cubeprog.html#get-software
