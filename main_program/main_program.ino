@@ -17,16 +17,16 @@
 #define SS_M4 PA0
 
 // L9958 DIRection pins
-#define DIR_M1 PA10
+#define RIGHT_MOTOR_DIR PA10 // DIR_M1
 #define DIR_M2 PB3
 #define DIR_M3 PB5
-#define DIR_M4 PA8
+#define LEFT_MOTOR_DIR PA8 // DIR_M4
 
 // L9958 PWM pins
-#define PWM_M1 PC7
+#define RIGHT_MOTOR PC7 // PWM_M1
 #define PWM_M2 PB6    // Timer1
 #define PWM_M3 PB4
-#define PWM_M4 PB10     // Timer0
+#define LEFT_MOTOR PB10 // Timer0, PWM_M4
 
 // L9958 Enable for all 4 motors
 #define ENABLE_MOTORS PA9
@@ -54,6 +54,7 @@ int start;
 // Motor variables
 int right_pwm, left_pwm;
 int right_dir, left_dir;
+int speed;
 // int pwm1, pwm2, pwm3, pwm4;  
 // int dir1, dir2, dir3, dir4;
 
@@ -112,6 +113,48 @@ long read_front_sensor() {
 }
 
 
+// Function to accelerate robot given initial pwm, the final pwm we want, increment pwm interval and if robot is inverted
+void accelerate(int initial_pwm, int max_pwm, int pwm_interval, int inverted) {
+  if (inverted) {
+    right_dir = !right_dir;
+    left_dir = !left_dir;
+  }
+
+  for (int pwm = initial_pwm; pwm <= max_pwm; pwm += pwm_interval) {
+    right_pwm = pwm;
+    left_pwm = pwm;
+    speed = pwm
+    analogWrite(RIGHT_MOTOR, speed);
+    digitalWrite(RIGHT_MOTOR_DIR, right_dir);
+    analogWrite(LEFT_MOTOR, speed);
+    digitalWrite(LEFT_MOTOR_DIR, left_dir);
+
+    digitalWrite(ENABLE_MOTORS, LOW);
+    delay(50);
+  }
+}
+
+// Function to decelerate robot given initial pwm, the final pwm we want, increment pwm interval and if robot is inverted
+void decelerate(int initial_pwm, int min_pwm, int pwm_interval, int inverted) {
+  if (inverted) {
+    right_dir = !right_dir;
+    left_dir = !left_dir;
+  }
+
+  for (int pwm = initial_pwm; pwm >= min_pwm; pwm -= pwm_interval) {
+    right_pwm = pwm;
+    left_pwm = pwm;
+    speed = pwm;
+    analogWrite(RIGHT_MOTOR, right_pwm);
+    digitalWrite(RIGHT_MOTOR_DIR, right_dir);
+    analogWrite(LEFT_MOTOR, left_pwm);
+    digitalWrite(LEFT_MOTOR_DIR, left_dir);
+
+    digitalWrite(ENABLE_MOTORS, LOW);
+    delay(50);
+  }
+}
+
 
 void setup() {
   Serial.begin(115200);
@@ -143,16 +186,16 @@ void setup() {
   pinMode(SS_M1, OUTPUT); digitalWrite(SS_M1, HIGH);
   
   // L9958 DIRection pins
-  pinMode(DIR_M1, OUTPUT);
+  pinMode(RIGHT_MOTOR_DIR, OUTPUT);
   pinMode(DIR_M2, OUTPUT);
   pinMode(DIR_M3, OUTPUT);
-  pinMode(DIR_M4, OUTPUT);
+  pinMode(LEFT_MOTOR_DIR, OUTPUT);
   
   // L9958 PWM pins
-  pinMode(PWM_M1, OUTPUT);  digitalWrite(PWM_M1, LOW);
+  pinMode(RIGHT_MOTOR, OUTPUT);  digitalWrite(RIGHT_MOTOR, LOW);
   pinMode(PWM_M2, OUTPUT);  digitalWrite(PWM_M2, LOW);    // Timer1
   pinMode(PWM_M3, OUTPUT);  digitalWrite(PWM_M3, LOW);
-  pinMode(PWM_M4, OUTPUT);  digitalWrite(PWM_M4, LOW);    // Timer0
+  pinMode(LEFT_MOTOR, OUTPUT);  digitalWrite(LEFT_MOTOR, LOW);    // Timer0
   
   // L9958 Enable for all 4 motors
   pinMode(ENABLE_MOTORS, OUTPUT);  digitalWrite(ENABLE_MOTORS, HIGH);   // HIGH = disabled
@@ -280,6 +323,9 @@ void loop() {
     // angle_tilt += gy_deg; //(gy_deg < 0.3f) ? 0.0f : gy_deg;
     // angle_turn += gz_deg; //(gz_deg < 0.3f) ? 0.0f : gz_deg;
 
+    speed = 0;
+    right_pwm = speed;
+    left_pwm = speed;
     long front_US_dist = read_front_sensor();
     delay(20);
     long left_US_dist = read_left_sensor();
@@ -289,32 +335,11 @@ void loop() {
 
     // TODO: Decide factor to ramp up motors or start initally at max speed
     // TODO: Direction stuff
-    for (int pwm = 0; pwm < 256; pwm += 10) {
-      right_pwm = pwm;
-      left_pwm = pwm;      
-      analogWrite(right_motor, right_pwm);
-      digitalWrite(right_motor_dir, right_dir);
-      analogWrite(left_motor, left_pwm);
-      digitalWrite(left_motor_dir, left_dir);
+    accelerate(speed, 255, 10, 0);
 
-      digitalWrite(ENABLE_MOTORS, LOW);
-      delay(50);
-
-    }
-
-    // if front sensor is approaching a wall, cut to half speed
+    // if front sensor is approaching a wall, cut to around half speed
     if (front_US_dist < 25) {
-      for (int pwm = right_pwm; pwm > 121; pwm -= 10) {
-        right_pwm = pwm;
-        left_pwm = pwm;      
-        analogWrite(right_motor, right_pwm);
-        digitalWrite(right_motor_dir, right_dir);
-        analogWrite(left_motor, left_pwm);
-        digitalWrite(left_motor_dir, left_dir);
-
-        digitalWrite(ENABLE_MOTORS, LOW);
-        delay(50);
-      }
+      decelerate(speed, 120, 10, 0);
     }
 
     // if left sensor reading is past edge, reduce right motor speed 
@@ -322,13 +347,13 @@ void loop() {
 
       // Make small adjustements
       // TODO: Test adjustement
-      analongWrite(right_motor, right_pwm - 5);
-      digitalWrite(right_motor_dir, right_dir);
+      analogWrite(RIGHT_MOTOR, right_pwm - 5);
+      digitalWrite(RIGHT_MOTOR_DIR, right_dir);
       digitalWrite(ENABLE_MOTORS, LOW);
       delay(50);
 
-      analongWrite(right_motor, right_pwm);
-      digitalWrite(right_motor_dir, right_dir);
+      analogWrite(RIGHT_MOTOR, right_pwm);
+      digitalWrite(RIGHT_MOTOR_DIR, right_dir);
       digitalWrite(ENABLE_MOTORS, LOW);
     }
 
@@ -336,13 +361,13 @@ void loop() {
     if (right_US_dist < 10) {
       // Make small adjustements
       // TODO: Test adjustement
-      analongWrite(left_motor, light_pwm - 5);
-      digitalWrite(left_motor_dir, light_dir);
+      analogWrite(LEFT_MOTOR, left_pwm - 5);
+      digitalWrite(LEFT_MOTOR_DIR, left_dir);
       digitalWrite(ENABLE_MOTORS, LOW);
       delay(50);
 
-      analongWrite(left_motor, left_pwm);
-      digitalWrite(left_motor_dir, left_dir);
+      analogWrite(LEFT_MOTOR, left_pwm);
+      digitalWrite(LEFT_MOTOR_DIR, left_dir);
       digitalWrite(ENABLE_MOTORS, LOW);
     }
 
