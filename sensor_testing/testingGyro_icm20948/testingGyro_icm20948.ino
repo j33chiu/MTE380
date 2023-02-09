@@ -11,8 +11,8 @@ const int ICM20948_addr = 0x69;
 const int board_green_led = PA5;
 
 // i2c lines: https://danieleff.github.io/STM32GENERIC/board_Nucleo_F401RE/
-const int i2c_2_scl = PB10;
-const int i2c_2_sda = PB3;
+const int i2c_2_scl = PB8;
+const int i2c_2_sda = PB9;
 
 TwoWire i2c_2(i2c_2_sda, i2c_2_scl);
 
