@@ -26,6 +26,15 @@
 // L9958 Enable for all 4 motors
 #define ENABLE_MOTORS PA9
 
+#define PWM_FREQ_1K     1000
+#define PWM_FREQ_8K     8000
+#define PWM_FREQ_16K    16000
+#define PWM_FREQ_32K    32000
+#define PWM_FREQ_64K    64000
+
+#define PWM_FREQ_CHOSEN PWM_FREQ_32K
+
+
 enum class MotorState : uint8_t {
   FORWARD,
   BACKWARD,

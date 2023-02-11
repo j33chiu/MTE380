@@ -31,7 +31,7 @@ void DCMotor::init_PWM(void) {
   this->htimChannel = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(pwmPin), PinMap_PWM));
 
   this->pwmTimer = new HardwareTimer(this->htim);
-  this->pwmTimer->setPWM(this->htimChannel, pwmPin, 8000, 0); // 0% duty cycle to start with (motors standstill)
+  this->pwmTimer->setPWM(this->htimChannel, pwmPin, PWM_FREQ_CHOSEN, 0); // 0% duty cycle to start with (motors standstill)
 
 }
 
@@ -58,25 +58,25 @@ void DCMotor::setSpeedPercent(uint8_t speedPercent) {
   switch (motorNum) {
   case 1:
     this->pwmTimer->pause();
-    this->pwmTimer->setPWM(this->htimChannel, M1_PWM_PIN, 8000, speedPercent);
+    this->pwmTimer->setPWM(this->htimChannel, M1_PWM_PIN, PWM_FREQ_CHOSEN, speedPercent);
     this->pwmTimer->refresh();
     this->pwmTimer->resume();
     break;
   case 2:
     this->pwmTimer->pause();
-    this->pwmTimer->setPWM(this->htimChannel, M2_PWM_PIN, 8000, speedPercent);
+    this->pwmTimer->setPWM(this->htimChannel, M2_PWM_PIN, PWM_FREQ_CHOSEN, speedPercent);
     this->pwmTimer->refresh();
     this->pwmTimer->resume();
     break;
   case 3:
     this->pwmTimer->pause();
-    this->pwmTimer->setPWM(this->htimChannel, M3_PWM_PIN, 8000, speedPercent);
+    this->pwmTimer->setPWM(this->htimChannel, M3_PWM_PIN, PWM_FREQ_CHOSEN, speedPercent);
     this->pwmTimer->refresh();
     this->pwmTimer->resume();
     break;
   case 4:
     this->pwmTimer->pause();
-    this->pwmTimer->setPWM(this->htimChannel, M4_PWM_PIN, 8000, speedPercent);
+    this->pwmTimer->setPWM(this->htimChannel, M4_PWM_PIN, PWM_FREQ_CHOSEN, speedPercent);
     this->pwmTimer->refresh();
     this->pwmTimer->resume();
     break;

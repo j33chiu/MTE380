@@ -23,31 +23,31 @@ void loop() {
   // ramp speed up for all motors
   m1.run(MotorState::FORWARD);
   m3.run(MotorState::FORWARD);
-  for (int i = 0; i <= 100; i += 5) {
+  for (int i = 0; i <= 100; i += 1) {
     m1.setSpeedPercent(i);
     m3.setSpeedPercent(i);
-    delay(50);
+    delay(10);
   }
   delay(10000);
-  for (int i = 100; i >= 0; i -= 5) {
+  for (int i = 100; i >= 0; i -= 1) {
     m1.setSpeedPercent(i);
     m3.setSpeedPercent(i);
-    delay(50);
+    delay(10);
   }
   delay(1000);
   
   m1.run(MotorState::BACKWARD);
   m3.run(MotorState::BACKWARD);
-  for (int i = 0; i <= 100; i += 5) {
+  for (int i = 0; i <= 100; i += 1) {
     m1.setSpeedPercent(i);
     m3.setSpeedPercent(i);
-    delay(50);
+    delay(10);
   }
   delay(10000);
-  for (int i = 100; i >= 0; i -= 5) {
+  for (int i = 100; i >= 0; i -= 1) {
     m1.setSpeedPercent(i);
     m3.setSpeedPercent(i);
-    delay(50);
+    delay(10);
   }
   delay(1000);
 
