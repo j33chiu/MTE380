@@ -26,13 +26,11 @@ DCMotor::DCMotor(uint8_t motorNum) {
 }
 
 void DCMotor::init_PWM(void) {
-
   this->htim = (TIM_TypeDef *)pinmap_peripheral(digitalPinToPinName(pwmPin), PinMap_PWM);
   this->htimChannel = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(pwmPin), PinMap_PWM));
 
   this->pwmTimer = new HardwareTimer(this->htim);
   this->pwmTimer->setPWM(this->htimChannel, pwmPin, PWM_FREQ_CHOSEN, 0); // 0% duty cycle to start with (motors standstill)
-
 }
 
 void DCMotor::run(MotorState motorState) {
@@ -46,41 +44,28 @@ void DCMotor::run(MotorState motorState) {
     Serial.println("backwards");
     digitalWrite(dirPin, HIGH);
     break;
+  case MotorState::BRAKE:
+    Serial.println("brake");
+    setSpeedPercent(0);
+    break;
   case MotorState::RELEASE:
     Serial.println("release");
-    //digitalWrite(M1_DIR_PIN, dir1);
+    while(speedPercent > 0) {
+      setSpeedPercent(speedPercent - 5);
+      delay(50);
+    }
+    digitalWrite(dirPin, LOW);
     break;
   }
 }
 
 void DCMotor::setSpeedPercent(uint8_t speedPercent) {
+  if (speedPercent < 0) speedPercent = 0;
   this->speedPercent = speedPercent;
-  switch (motorNum) {
-  case 1:
-    this->pwmTimer->pause();
-    this->pwmTimer->setPWM(this->htimChannel, M1_PWM_PIN, PWM_FREQ_CHOSEN, speedPercent);
-    this->pwmTimer->refresh();
-    this->pwmTimer->resume();
-    break;
-  case 2:
-    this->pwmTimer->pause();
-    this->pwmTimer->setPWM(this->htimChannel, M2_PWM_PIN, PWM_FREQ_CHOSEN, speedPercent);
-    this->pwmTimer->refresh();
-    this->pwmTimer->resume();
-    break;
-  case 3:
-    this->pwmTimer->pause();
-    this->pwmTimer->setPWM(this->htimChannel, M3_PWM_PIN, PWM_FREQ_CHOSEN, speedPercent);
-    this->pwmTimer->refresh();
-    this->pwmTimer->resume();
-    break;
-  case 4:
-    this->pwmTimer->pause();
-    this->pwmTimer->setPWM(this->htimChannel, M4_PWM_PIN, PWM_FREQ_CHOSEN, speedPercent);
-    this->pwmTimer->refresh();
-    this->pwmTimer->resume();
-    break;
-  }
+  this->pwmTimer->pause();
+  this->pwmTimer->setPWM(this->htimChannel, this->pwmPin, PWM_FREQ_CHOSEN, speedPercent);
+  this->pwmTimer->refresh();
+  this->pwmTimer->resume();
 }
 
 void DCMotor::enableMotors(void) {
@@ -94,18 +79,22 @@ void DCMotor::disableMotors(void) {
 void DCMotor::setupMotors(void) {
   unsigned int configWord;
 
-  pinMode(SS_M3, OUTPUT); digitalWrite(SS_M3, HIGH);  // HIGH = not selected
-  pinMode(SS_M1, OUTPUT); digitalWrite(SS_M1, HIGH);
+  pinMode(SS_M1, OUTPUT); digitalWrite(SS_M1, HIGH);  // HIGH = not selected
+  pinMode(SS_M2, OUTPUT); digitalWrite(SS_M2, HIGH);
+  pinMode(SS_M3, OUTPUT); digitalWrite(SS_M3, HIGH);
+  pinMode(SS_M4, OUTPUT); digitalWrite(SS_M4, HIGH);
   
   // L9958 DIRection pins
   pinMode(M1_DIR_PIN, OUTPUT);
+  pinMode(M2_DIR_PIN, OUTPUT);
   pinMode(M3_DIR_PIN, OUTPUT);
+  pinMode(M4_DIR_PIN, OUTPUT);
   
   // L9958 PWM pins
   pinMode(M1_PWM_PIN, OUTPUT);  digitalWrite(M1_PWM_PIN, LOW);
-  //pinMode(PWM_M2, OUTPUT);  digitalWrite(PWM_M2, LOW);    // Timer1
+  pinMode(M2_PWM_PIN, OUTPUT);  digitalWrite(M2_PWM_PIN, LOW);    // Timer1
   pinMode(M3_PWM_PIN, OUTPUT);  digitalWrite(M3_PWM_PIN, LOW);
-  //pinMode(PWM_M4, OUTPUT);  digitalWrite(PWM_M4, LOW);    // Timer0
+  pinMode(M4_PWM_PIN, OUTPUT);  digitalWrite(M4_PWM_PIN, LOW);    // Timer0
   
   // L9958 Enable for all 4 motors
   pinMode(ENABLE_MOTORS, OUTPUT);  digitalWrite(ENABLE_MOTORS, HIGH);   // HIGH = disabled
@@ -144,19 +133,19 @@ void DCMotor::setupMotors(void) {
   SPI.transfer(highByte(configWord));
   digitalWrite(SS_M1, HIGH); 
   // Motor 2
-  //digitalWrite(SS_M2, LOW);
-  //SPI.transfer(lowByte(configWord));
-  //SPI.transfer(highByte(configWord));
-  //digitalWrite(SS_M2, HIGH);
+  digitalWrite(SS_M2, LOW);
+  SPI.transfer(lowByte(configWord));
+  SPI.transfer(highByte(configWord));
+  digitalWrite(SS_M2, HIGH);
   // Motor 3
   digitalWrite(SS_M3, LOW);
   SPI.transfer(lowByte(configWord));
   SPI.transfer(highByte(configWord));
   digitalWrite(SS_M3, HIGH);
   // Motor 4
-  //digitalWrite(SS_M4, LOW);
-  //SPI.transfer(lowByte(configWord));
-  //SPI.transfer(highByte(configWord));
-  //digitalWrite(SS_M4, HIGH);
+  digitalWrite(SS_M4, LOW);
+  SPI.transfer(lowByte(configWord));
+  SPI.transfer(highByte(configWord));
+  digitalWrite(SS_M4, HIGH);
   
 }

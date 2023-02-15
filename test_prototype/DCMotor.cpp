@@ -39,16 +39,24 @@ void DCMotor::run(MotorState motorState) {
   this->motorState = motorState;
   switch (motorState) {
   case MotorState::FORWARD:
-    // Serial.println("forwards");
+    Serial.println("forwards");
     digitalWrite(dirPin, LOW);
     break;
   case MotorState::BACKWARD:
-    // Serial.println("backwards");
+    Serial.println("backwards");
     digitalWrite(dirPin, HIGH);
     break;
+  case MotorState::BRAKE:
+    Serial.println("brake");
+    setSpeedPercent(0);
+    break;
   case MotorState::RELEASE:
-    // Serial.println("release");
-    //digitalWrite(M1_DIR_PIN, dir1);
+    Serial.println("release");
+    while(speedPercent > 0) {
+      setSpeedPercent(speedPercent - 5);
+      delay(50);
+    }
+    digitalWrite(dirPin, LOW);
     break;
   }
 }
@@ -81,6 +89,14 @@ void DCMotor::setSpeedPercent(uint8_t speedPercent) {
     this->pwmTimer->resume();
     break;
   }
+}
+
+MotorState DCMotor::getMotorState(void) {
+  return this->motorState;
+}
+
+uint8_t DCMotor::getMotorSpeedPercent(void) {
+  return this->speedPercent;
 }
 
 void DCMotor::enableMotors(void) {
