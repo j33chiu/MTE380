@@ -171,6 +171,7 @@ void leftRotate(uint8_t percentSpeed) {
     right.setSpeedPercent(speed);
     currentPercentSpeed = speed;
     delay(10);
+    // might need to tick gyro here
   }
 }
 
@@ -190,6 +191,7 @@ void rightRotate(uint8_t percentSpeed) {
     right.setSpeedPercent(speed);
     currentPercentSpeed = speed;
     delay(10);
+    // might need to tick gyro here
   }
 }
 
@@ -205,6 +207,11 @@ long distanceFront() {
   digitalWrite(FRONT_US_TRIG, LOW);
   long pulseDuration = pulseIn(FRONT_US_ECHO, HIGH);
   return pulseDuration * 0.034 / 2;
+}
+
+bool atDestination() {
+  // TODO: use colour sensor
+  return false;
 }
 
 void tickGyro() {
@@ -236,10 +243,20 @@ void tickGyro() {
 
 float turnAngle() {
   if (!ready) return -1;
+  return angle_turn;
+}
+
+bool isVertical() {
+  if (!ready) return false;
+  // calibrate this 70 degree value
+  if (angle_tilt > 70 || angle_tilt < -70) return true;
+  return false;
 }
 
 bool isUpsideDown() {
   if (!ready) return false;
+  // if tilt_angle is around +/- 180 return true
+  // or use magnetometer
 }
 
 bool shouldEStop() {

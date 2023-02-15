@@ -1,4 +1,4 @@
- #include "Rover.h"
+#include "Navigation.h"
 
 
 void setup() {
@@ -15,23 +15,20 @@ void loop() {
   Serial.println("Program started");
   // test forwards then backwards with stop in between
   Serial.println("rover forwards");
-  Rover::forwards(100);
+  Rover::forwards(80);
   delay(2000);
   Serial.println("rover stop");
   Rover::stop();
   delay(2000);
   Serial.println("rover backwards");
-  Rover::backwards(100);
-  delay(2000);
-  Serial.println("rover forwards");
-  Rover::forwards(100); // test safety of changing directions without calling stop() explicitly
+  Rover::backwards(80);
   delay(2000);
   Serial.println("rover right rotate");
-  Rover::rightRotate(100);
-  delay(2000);
+  Rover::rightRotate(50);
+  delay(3000);
   Serial.println("rover left rotate");
   Rover::leftRotate(50);
-  delay(2000);
+  delay(3000);
   Rover::stop();
   while(true) {
     // prototype: show sensor works
