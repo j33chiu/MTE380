@@ -1,5 +1,6 @@
 #include "Navigation.h"
 
+#include <vector>
 
 void setup() {
   Serial.begin(115200);
@@ -9,31 +10,93 @@ void setup() {
   Rover::init();
 }
 
-void loop() {
-  // prototype: show movement
-
-  Serial.println("Program started");
-  // test forwards then backwards with stop in between
-  Serial.println("rover forwards");
+void TP1() {
+  // ground speed
+  delay(2000);
   Rover::forwards(80);
-  delay(2000);
-  Serial.println("rover stop");
+  delay(20000);
   Rover::stop();
+  while(true);
+}
+
+void TP2() {
+  // wall speed
   delay(2000);
-  Serial.println("rover backwards");
-  Rover::backwards(80);
-  delay(2000);
-  Serial.println("rover right rotate");
-  Rover::rightRotate(50);
-  delay(3000);
-  Serial.println("rover left rotate");
-  Rover::leftRotate(50);
-  delay(3000);
+  Rover::forwards(60);
+  delay(10000);
   Rover::stop();
-  while(true) {
-    // prototype: show sensor works
-    Serial.println(Rover::distanceFront());
-    delay(10);
+  while(true);
+}
+
+void TP3(int distance) {
+  // distance sensor
+  delay(2000);
+  Rover::forwards(70);
+
+  int dummy = Rover::distanceFrontLaser();
+  while(dummy == 0) {
+    dummy = Rover::distanceFrontLaser();
   }
+  Serial.println(dummy);
+  while(dummy > (distance + 100)) {
+    dummy = Rover::distanceFrontLaser();
+    Serial.println(dummy);
+  }
+  Rover::stop();
+}
+
+void loop() {
+  //TP1();
+  //TP2();
+  TP3(1500);
+  delay(10000);
+  TP3(500);
+  while(true);
+
+  //int dist = Rover::distanceFront();
+  //Serial.println(dist);
+
+  // turn with gyro code
+  /*
+  Rover::leftRotate(35);
+  while(Rover::turnAngle() < 90) {
+    Rover::tickGyro();
+  }
+  Rover::stop();
+
+  delay(5000);
+  Rover::rightRotate(35);
+  while(Rover::turnAngle() > -90) {
+    Rover::tickGyro();
+  }
+  Rover::stop();
+
+  while(true);
+  */
+
+  //gyro reading code
+  /*
+  int start = millis();
+  Rover::tickGyro();
+  int elapsed = millis() - start;
+  float turnAngle = Rover::turnAngle();*/
+/*
+  Serial.print(turnAngle);
+  Serial.print(": ");
+  Serial.print(elapsed);
+  Serial.print("ms.     ");*/
+
+  // front distance (ultrasonic) reading code
+  
+  int dist = Rover::distanceFrontLaser();
+  if (dist < 2047 && dist > 100) {
+    Serial.print(dist);
+    Serial.println(" mm");
+  }
+
+  //
+  //Navigation::searchDebug();
+
+  //while(true);
 
 }

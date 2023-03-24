@@ -17,9 +17,13 @@ const int RIGHT_US_TRIG = PB14;
 const int RIGHT_US_ECHO = PB13;
 
 const int ICM20948_ADDR = 0x69;
-const int I2C_SCL = PB15;
-const int I2C_SDA = PB1;
+const int I2C_SCL = PB8; //PB15;
+const int I2C_SDA = PB9; //PB1;
 TwoWire i2c(I2C_SDA, I2C_SCL);
+
+// TOF laser sensor
+const int SEN0245_ADDR = 0x50;
+DFRobot_VL53L0X tof_sensor;
 
 // gyro variables
 Adafruit_ICM20948 icm;
@@ -47,12 +51,12 @@ MoveDirection currentMoveDirection = MoveDirection::STOPPED;
 void init() {
 
   // ultrasonic sensor setup:
-  pinMode(FRONT_US_TRIG, OUTPUT);
-  pinMode(FRONT_US_ECHO, INPUT);
-  pinMode(LEFT_US_TRIG, OUTPUT);
-  pinMode(LEFT_US_ECHO, INPUT);
-  pinMode(RIGHT_US_TRIG, OUTPUT);
-  pinMode(RIGHT_US_ECHO, INPUT);
+  // pinMode(FRONT_US_TRIG, OUTPUT);
+  // pinMode(FRONT_US_ECHO, INPUT);
+  // pinMode(LEFT_US_TRIG, OUTPUT);
+  // pinMode(LEFT_US_ECHO, INPUT);
+  // pinMode(RIGHT_US_TRIG, OUTPUT);
+  // pinMode(RIGHT_US_ECHO, INPUT);
   
 
   // motor setup
@@ -62,10 +66,25 @@ void init() {
   DCMotor::enableMotors();
 
   // gyro setup
-  /*i2c.begin();
+  i2c.begin();
   if (!icm.begin_I2C(ICM20948_ADDR, &i2c)) {
     Serial.println("unable to setup ICM20948 IMU");
+  } else {
+    initGyro();
   }
+
+  // setup TOF sensor
+  Wire.begin(); // PB3, PB10
+  tof_sensor.begin(SEN0245_ADDR); // https://github.com/DFRobot/I2C_Addresses
+  tof_sensor.setMode(
+    DFRobot_VL53L0X::eModeState::eContinuous, 
+    DFRobot_VL53L0X::ePrecisionState::eHigh);
+  tof_sensor.start();
+
+  ready = true;
+}
+
+void initGyro() {
   Serial.println("Successfully setup ICM20948 IMU");
   icm.setAccelRange(ICM20948_ACCEL_RANGE_16_G);
   icm.setGyroRange(ICM20948_GYRO_RANGE_250_DPS);
@@ -91,8 +110,6 @@ void init() {
   gz_offset /= 1000.0f;
   loop_time = micros();
   last_measure = micros();
-*/
-  ready = true;
 }
 
 void forwards(uint8_t percentSpeed) {
@@ -170,8 +187,12 @@ void leftRotate(uint8_t percentSpeed) {
     left.setSpeedPercent(speed);
     right.setSpeedPercent(speed);
     currentPercentSpeed = speed;
-    delay(10);
+    //delay(10);
     // might need to tick gyro here
+    tickGyro();
+    tickGyro();
+    tickGyro();
+    // ~9m delay from ticking gyro 3x
   }
 }
 
@@ -190,8 +211,12 @@ void rightRotate(uint8_t percentSpeed) {
     left.setSpeedPercent(speed);
     right.setSpeedPercent(speed);
     currentPercentSpeed = speed;
-    delay(10);
+    // delay(10);
     // might need to tick gyro here
+    tickGyro();
+    tickGyro();
+    tickGyro();
+    // ~9m delay from ticking gyro 3x
   }
 }
 
@@ -207,6 +232,11 @@ long distanceFront() {
   digitalWrite(FRONT_US_TRIG, LOW);
   long pulseDuration = pulseIn(FRONT_US_ECHO, HIGH);
   return pulseDuration * 0.034 / 2;
+}
+
+long distanceFrontLaser() {
+  if (!ready) return -1;
+  return tof_sensor.getDistance();
 }
 
 bool atDestination() {

@@ -63,7 +63,7 @@ void setup() {
   sensors_event_t gyro;
   sensors_event_t mag;
   sensors_event_t temp;
-  for (int i = 0; i < 10000; ++i) {
+  for (int i = 0; i < 1000; ++i) {
     icm.getEvent(&accel, &gyro, &temp, &mag);
     gx_offset += gyro.gyro.x;
     gy_offset += gyro.gyro.y;
@@ -71,9 +71,9 @@ void setup() {
     delay(3);
   }
 
-  gx_offset /= 10000.0f;
-  gy_offset /= 10000.0f;
-  gz_offset /= 10000.0f;
+  gx_offset /= 1000.0f;
+  gy_offset /= 1000.0f;
+  gz_offset /= 1000.0f;
 
   loop_time = micros();
   last_measure = micros();

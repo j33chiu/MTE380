@@ -8,6 +8,9 @@
 #include <Adafruit_ICM20948.h>
 #include <Adafruit_Sensor.h>
 
+// SEN0245 TOF sensor
+#include <DFRobot_VL53L0X.h>
+
 namespace Rover {
 
 enum class RotateType : uint8_t {
@@ -31,6 +34,7 @@ enum class MoveDirection : uint8_t {
 
 // setup
 void init();
+void initGyro();
 
 // movement functions
 void forwards(uint8_t percentSpeed);                                      // move straight forwards
@@ -41,6 +45,7 @@ void rightRotate(uint8_t percentSpeed = 100);                             // piv
 
 // sensor information
 long distanceFront();                                                     // get distance (in cm) to an object in front of the rover
+long distanceFrontLaser();                                                // get distance (in cm) to an object in front of the rover
 bool atDestination();                                                     // get whether the target has been located
 void tickGyro();                                                          // function to be called as frequently as possible to update from gyro
 float turnAngle();                                                        // get current turn angle of the rover (off original starting position)

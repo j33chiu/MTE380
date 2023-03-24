@@ -1,6 +1,5 @@
 #include "Navigation.h"
 
-#include <vector>
 
 namespace Navigation {
 
@@ -38,13 +37,39 @@ bool climbDownWall() {
   while(Rover::isVertical());
 }
 
+void searchDebug() {
+  std::vector<float> anglesOfInterest;
+  long prevDistMeasurement = Rover::distanceFrontLaser();
+  prevDistMeasurement = Rover::distanceFrontLaser();
+  long threshold = 100;
+
+  // rotate right
+  Serial.print("first distance: ");
+  Serial.println(prevDistMeasurement);
+  Rover::rightRotate(35);
+  while(Rover::turnAngle() > -180) {
+    // needs to tick the gyro as frequently as possible here
+    Rover::tickGyro();
+    long dist = Rover::distanceFrontLaser();
+    if (dist > 2000 || dist < 100) continue;
+    Serial.println(dist);
+    if (abs(prevDistMeasurement - dist) > threshold) {
+      anglesOfInterest.push_back(Rover::turnAngle());
+      break;
+    }
+    prevDistMeasurement = dist;
+  }
+  Rover::stop();
+
+}
+
 bool search() {
   long leftDist;
   long rightDist;
   std::vector<float> anglesOfInterest;
   // rotate left 90 degrees
   Rover::leftRotate(100);
-  while(Rover::turnAngle() > -90) {
+  while(Rover::turnAngle() < 90) {
     // needs to tick the gyro as frequently as possible here
     Rover::tickGyro();
   }
@@ -55,7 +80,7 @@ bool search() {
   long prevDistMeasurement = leftDist;
   long threshold = 40;
   Rover::rightRotate(50);
-  while(Rover::turnAngle() < 90) {
+  while(Rover::turnAngle() > -90) {
     // needs to tick the gyro as frequently as possible here
     Rover::tickGyro();
     long dist = Rover::distanceFront();
@@ -75,7 +100,7 @@ bool search() {
   for(int i = 0; (i + 1) < anglesOfInterest.size(); i += 2) {
     float angle = (anglesOfInterest[i] + anglesOfInterest[i + 1]) / 2;
     Rover::leftRotate(50);
-    while(Rover::turnAngle() > angle) {
+    while(Rover::turnAngle() < angle) {
       Rover::tickGyro();
     }
     Rover::stop();

@@ -24,7 +24,8 @@ void setup() {
     delay(10); // pause
 
   // i2c connections
-  //Wire.begin(i2c_1_sda, i2c_1_scl); // TOF laser sensor uses default Wire, so redefine pins
+  //Wire.begin(PC1, PC0); // TOF laser sensor uses default Wire, so redefine pins
+  //Wire.begin(PB3, PB10);
   Wire.begin();
 
   // setup nucleo onboard green led
