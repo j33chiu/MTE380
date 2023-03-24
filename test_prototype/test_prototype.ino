@@ -35,11 +35,13 @@ void TP3(int distance) {
 
   int dummy = Rover::distanceFrontLaser();
   while(dummy == 0) {
-    dummy = Rover::distanceFrontLaser();
+    int poll = Rover::distanceFrontLaser();
+    if (poll > 400) dummy = poll;
   }
   Serial.println(dummy);
   while(dummy > (distance + 100)) {
-    dummy = Rover::distanceFrontLaser();
+    int poll = Rover::distanceFrontLaser();
+    if (poll > 400) dummy = poll;
     Serial.println(dummy);
   }
   Rover::stop();
