@@ -74,7 +74,7 @@ void init() {
   }
 
   // setup TOF sensor
-  Wire.begin(); // PB3, PB10
+  Wire.begin(); // PB3 (SDA), PB10 (SCL)
   tof_sensor.begin(SEN0245_ADDR); // https://github.com/DFRobot/I2C_Addresses
   tof_sensor.setMode(
     DFRobot_VL53L0X::eModeState::eContinuous, 
@@ -146,7 +146,10 @@ void backwards(uint8_t percentSpeed) {
     left.setSpeedPercent(speed);
     right.setSpeedPercent(speed);
     currentPercentSpeed = speed;
-    delay(10);
+    
+    tickGyro();
+    tickGyro();
+    tickGyro();
   }
 }
 
@@ -165,7 +168,10 @@ void stop() {
     rightSpeed = right.getMotorSpeedPercent();
     leftMoving = (leftSpeed > 0);
     rightMoving = (rightSpeed > 0);
-    delay(10);
+    
+    tickGyro();
+    tickGyro();
+    tickGyro();
   }
 
   currentPercentSpeed = 0;
@@ -276,10 +282,23 @@ float turnAngle() {
   return angle_turn;
 }
 
+float tiltAngle() {
+  if (!ready) return NULL;
+  return angle_tilt;
+}
+
+void resetTurn() {
+  angle_turn = 0;
+}
+
+void resetTilt() {
+  angle_tilt = 0;
+}
+
 bool isVertical() {
   if (!ready) return false;
   // calibrate this 70 degree value
-  if (angle_tilt > 70 || angle_tilt < -70) return true;
+  if (angle_tilt > 60 || angle_tilt < -60) return true;
   return false;
 }
 
